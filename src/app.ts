@@ -64,10 +64,17 @@ class App {
   private initializeSwagger() {
     const options = {
       swaggerDefinition: {
+        components: {
+          schemas: {},
+        },
         info: {
-          title: "REST API",
+          title: "Temanikah - OpenAPI 3.0",
           version: "1.0.0",
-          description: "Example docs",
+          description: "API Temanikah",
+          license: {
+            name: "MIT",
+            url: "https://opensource.org/licenses/MIT",
+          },
         },
       },
       apis: ["swagger.yaml"],

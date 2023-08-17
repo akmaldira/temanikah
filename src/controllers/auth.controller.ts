@@ -1,6 +1,6 @@
 import { SECRET_KEY } from "@config";
 import { UserEntity } from "@database/entities/user.entity";
-import { registerRequestSpec } from "@dtos/auth.dto";
+import { registerRequestSpec, registerResponseSpec } from "@dtos/auth.dto";
 import { HttpException } from "@exceptions/http.exception";
 import { LoginRequest, RegisterRequest } from "@interfaces/auth.interface";
 import UserRepository from "@repositories/user.repository";
@@ -33,7 +33,10 @@ class AuthController {
 
     const token = await this.generateToken(user!);
 
-    res.status(200).json({ user_id: user?.id, token });
+    res.status(200).json({
+      error: false,
+      data: { id: user?.id, role: user?.role, token },
+    });
   };
 
   public register = async (req: Request, res: Response) => {
@@ -45,7 +48,10 @@ class AuthController {
 
     const user = await this.userRepository.create(body as UserEntity);
 
-    res.status(201).json(user);
+    res.status(201).json({
+      error: false,
+      data: registerResponseSpec(user),
+    });
   };
 
   private parseRequestBody = (body: any): RegisterRequest => {

@@ -16,7 +16,7 @@ const hasRole = (roles: UserRole[]) => async (
         ? req.header("Authorization")!.split("Bearer ")[1]
         : null);
 
-    if (!authorization) next(new HttpException(404, "Token tidak ditemukan"));
+    if (!authorization) next(new HttpException(401, "Token tidak ditemukan"));
 
     const secretKey: string = SECRET_KEY!;
     verify(authorization, secretKey, (err: any, userToken: any) => {

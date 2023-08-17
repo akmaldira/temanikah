@@ -9,5 +9,5 @@ export const registerRequestSpec = (body: any): RegisterRequest => ({
 export const registerResponseSpec = (user: UserEntity) => ({
   id: user.id,
   email: user.email,
-  created_at: user.created_at,
+  role: user.role,
 });
