@@ -1,6 +1,6 @@
 import { LOG_FORMAT, NODE_ENV, PORT } from "@config";
 import { AppDataSource } from "@database/datasource";
-import { Routes } from "@interfaces/route.interface";
+import { IRoutes } from "@interfaces/route.interface";
 import errorMiddleware from "@middlewares/error.middleware";
 import { logger, stream } from "@utils/logger";
 import compression from "compression";
@@ -18,7 +18,7 @@ class App {
   public env: string;
   public port: string | number;
 
-  constructor(routes: Routes[]) {
+  constructor(routes: IRoutes[]) {
     this.app = express();
     this.env = NODE_ENV;
     this.port = PORT || 3000;
@@ -55,7 +55,7 @@ class App {
     this.app.use(cookieParser());
   }
 
-  private initializeRoutes(routes: Routes[]): void {
+  private initializeRoutes(routes: IRoutes[]): void {
     routes.forEach((route) => {
       this.app.use("/", route.router);
     });

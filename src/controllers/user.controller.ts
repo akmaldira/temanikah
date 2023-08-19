@@ -1,5 +1,5 @@
-import { userResponseSpec } from "@/dtos/users.dto";
-import UserRepository from "@/repositories/user.repository";
+import { userResponseSpec } from "@dtos/users.dto";
+import UserRepository from "@repositories/user.repository";
 import { Request, Response } from "express";
 
 class UserController {
@@ -12,7 +12,10 @@ class UserController {
   public findAll = async (req: Request, res: Response) => {
     const users = await this.repository.getAll();
 
-    res.status(200).json(userResponseSpec(users));
+    res.status(200).json({
+      error: false,
+      data: users.map((user) => userResponseSpec(user)),
+    });
   };
 }
 

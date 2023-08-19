@@ -1,52 +1,55 @@
+import { AppDataSource } from "@/database/datasource";
 import { SECRET_KEY } from "@config";
-import { UserEntity } from "@database/entities/user.entity";
-import { registerRequestSpec, registerResponseSpec } from "@dtos/auth.dto";
+import { User } from "@database/entities/user.entity";
+import { registerResponseSpec } from "@dtos/auth.dto";
 import { HttpException } from "@exceptions/http.exception";
-import { LoginRequest, RegisterRequest } from "@interfaces/auth.interface";
 import UserRepository from "@repositories/user.repository";
-import { LoginRegisterSchema } from "@validations/auth.validation";
+import { loginBodySpec, registerBodySpec } from "@validations/auth.validation";
 import { compare, hash } from "bcrypt";
 import { Request, Response } from "express";
 import { sign } from "jsonwebtoken";
 
 class AuthController {
   private userRepository: UserRepository;
+
   constructor() {
-    this.userRepository = new UserRepository();
+    this.userRepository = new UserRepository(
+      User,
+      AppDataSource.manager,
+      AppDataSource.manager.queryRunner
+    );
   }
 
   public login = async (req: Request, res: Response) => {
-    const body: LoginRequest = this.parseRequestBody(req.body);
+    loginBodySpec.parse(req.body);
 
-    const user = await this.userRepository.getByEmail(body.email);
+    const user = await this.userRepository.getByEmail(req.body.email);
 
     this.checkIfUserExists(user);
 
-    const isPasswordMatch: boolean = await this.checkIfPasswordMatch(
-      body.password,
-      user!.password
-    );
-
-    if (!isPasswordMatch) {
-      throw new HttpException(400, "Email atau password salah");
-    }
+    await this.checkIfPasswordMatch(req.body.password, user!.password);
 
     const token = await this.generateToken(user!);
 
     res.status(200).json({
       error: false,
-      data: { id: user?.id, role: user?.role, token },
+      data: { id: user!.id, role: user!.role, token },
     });
   };
 
   public register = async (req: Request, res: Response) => {
-    const body: RegisterRequest = this.parseRequestBody(req.body);
+    registerBodySpec.parse(req.body);
 
-    this.checkIfUserNotExists(await this.userRepository.getByEmail(body.email));
+    this.checkIfUserNotExists(
+      await this.userRepository.getByEmail(req.body.email)
+    );
 
-    body.password = await this.hashPassword(body.password);
+    const passwordHash = await this.hashPassword(req.body.password);
 
-    const user = await this.userRepository.create(body as UserEntity);
+    const user = await this.userRepository.save({
+      email: req.body.email,
+      password: passwordHash,
+    } as User);
 
     res.status(201).json({
       error: false,
@@ -54,20 +57,25 @@ class AuthController {
     });
   };
 
-  private parseRequestBody = (body: any): RegisterRequest => {
-    LoginRegisterSchema.parse(body);
-    return registerRequestSpec(body);
-  };
-
-  private checkIfUserNotExists = (user: UserEntity | null): void => {
-    if (user) {
-      throw new HttpException(400, "Email telah terdaftar");
+  private checkIfUserExists = (user: User | null): void => {
+    if (!user) {
+      throw new HttpException(400, "Email tidak terdaftar", "EMAIL_NOT_FOUND");
     }
   };
 
-  private checkIfUserExists = (user: UserEntity | null): void => {
-    if (!user) {
-      throw new HttpException(400, "Email tidak terdaftar");
+  private checkIfPasswordMatch = async (
+    bodyPassword: string,
+    userPassword: string
+  ): Promise<void> => {
+    const match = await compare(bodyPassword, userPassword);
+    if (!match) {
+      throw new HttpException(400, "Password salah", "PASSWORD_NOT_MATCH");
+    }
+  };
+
+  private checkIfUserNotExists = (user: User | null): void => {
+    if (user) {
+      throw new HttpException(400, "Email telah terdaftar", "EMAIL_EXISTS");
     }
   };
 
@@ -75,14 +83,7 @@ class AuthController {
     return await hash(password, 10);
   };
 
-  private checkIfPasswordMatch = async (
-    bodyPassword: string,
-    userPassword: string
-  ): Promise<boolean> => {
-    return await compare(bodyPassword, userPassword);
-  };
-
-  private generateToken = async (user: UserEntity): Promise<string> => {
+  private generateToken = async (user: User): Promise<string> => {
     const dataStoredInToken = {
       id: user.id,
       email: user.email,

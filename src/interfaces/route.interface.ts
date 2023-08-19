@@ -1,6 +1,11 @@
-import { Router } from "express";
+import { Request, Router } from "express";
+import { IUser } from "./user.interface";
 
-export interface Routes {
+export interface IRoutes {
   path: string;
   router: Router;
+}
+
+export interface RequestWithUser extends Request {
+  user?: IUser;
 }

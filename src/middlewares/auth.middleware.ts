@@ -1,11 +1,12 @@
+import { RequestWithUser } from "@/interfaces/route.interface";
 import { SECRET_KEY } from "@config";
 import { UserRole } from "@database/entities/user.entity";
 import { HttpException } from "@exceptions/http.exception";
-import { NextFunction, Request } from "express";
+import { NextFunction } from "express";
 import { TokenExpiredError, verify } from "jsonwebtoken";
 
 const hasRole = (roles: UserRole[]) => async (
-  req: Request,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction
 ) => {
@@ -16,25 +17,38 @@ const hasRole = (roles: UserRole[]) => async (
         ? req.header("Authorization")!.split("Bearer ")[1]
         : null);
 
-    if (!authorization) next(new HttpException(401, "Token tidak ditemukan"));
+    if (!authorization)
+      next(new HttpException(401, "Token tidak ditemukan", "TOKEN_NOT_FOUND"));
 
     const secretKey: string = SECRET_KEY!;
-    verify(authorization, secretKey, (err: any, userToken: any) => {
+    verify(authorization, secretKey, (err: any, user: any) => {
       if (err) {
         if (err instanceof TokenExpiredError)
-          return next(new HttpException(401, "Token autentikasi kadaluarsa"));
-        next(new HttpException(401, "Token autentikasi salah"));
-      }
-      if (!roles.some((r) => userToken.role.includes(r)))
+          return next(
+            new HttpException(
+              401,
+              "Token autentikasi kadaluarsa",
+              "TOKEN_EXPIRED"
+            )
+          );
         next(
-          new HttpException(403, "Anda tidak memiliki akses untuk fitur ini")
+          new HttpException(401, "Token autentikasi salah", "TOKEN_INVALID")
+        );
+      }
+      if (!roles.includes(user.role))
+        next(
+          new HttpException(
+            403,
+            "Anda tidak memiliki akses untuk fitur ini",
+            "FORBIDDEN"
+          )
         );
 
-      req.user = userToken;
+      req.user = user;
       next();
     });
   } catch (error) {
-    next(new HttpException(401, "Token autentikasi salah"));
+    next(new HttpException(401, "Token autentikasi salah", "TOKEN_INVALID"));
   }
 };
 

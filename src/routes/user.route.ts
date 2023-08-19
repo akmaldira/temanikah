@@ -1,11 +1,11 @@
 import UserController from "@/controllers/user.controller";
 import { UserRole } from "@/database/entities/user.entity";
 import { tryCatch } from "@/utils/tryCatch";
-import { Routes } from "@interfaces/route.interface";
+import { IRoutes } from "@interfaces/route.interface";
 import hasRole from "@middlewares/auth.middleware";
 import { Router } from "express";
 
-class UserRoute implements Routes {
+class UserRoute implements IRoutes {
   public path: string;
   public router = Router();
   private controller = new UserController();

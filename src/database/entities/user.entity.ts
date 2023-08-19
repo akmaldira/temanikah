@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { BaseEntity } from "./base.entity";
+import { Transaction } from "./transactions.entity";
 
 export enum UserRole {
   "admin" = "admin",
@@ -7,14 +8,13 @@ export enum UserRole {
 }
 
 @Entity({ schema: "public", name: "users" })
-export class UserEntity extends BaseEntity {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({
     type: "enum",
     enum: UserRole,
-    array: true,
     default: [UserRole.user],
   })
   role: string;
@@ -39,4 +39,11 @@ export class UserEntity extends BaseEntity {
 
   @Column({ nullable: true })
   banned_at: Date;
+
+  // Relational
+  @OneToMany(
+    () => Transaction,
+    (transaction) => transaction.user_id
+  )
+  transactions: Transaction[];
 }

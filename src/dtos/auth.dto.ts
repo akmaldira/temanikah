@@ -1,13 +1,14 @@
-import { UserEntity } from "@/database/entities/user.entity";
-import { RegisterRequest } from "@/interfaces/auth.interface";
+import { User } from "@/database/entities/user.entity";
 
-export const registerRequestSpec = (body: any): RegisterRequest => ({
-  email: body.email,
-  password: body.password,
-});
-
-export const registerResponseSpec = (user: UserEntity) => ({
+export const registerResponseSpec = (user: User) => ({
   id: user.id,
   email: user.email,
   role: user.role,
+});
+
+export const loginResponseSpec = (user: User, token: string) => ({
+  id: user.id,
+  email: user.email,
+  role: user.role,
+  token,
 });

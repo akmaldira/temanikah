@@ -1,9 +1,9 @@
 import { tryCatch } from "@/utils/tryCatch";
 import AuthController from "@controllers/auth.controller";
-import { Routes } from "@interfaces/route.interface";
+import { IRoutes } from "@interfaces/route.interface";
 import { Router } from "express";
 
-class AuthRoute implements Routes {
+class AuthRoute implements IRoutes {
   public path: string;
   public router = Router();
   public controller = new AuthController();
