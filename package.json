@@ -1,7 +1,7 @@
 {
   "name": "temanikah",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "dev": "yarn build && cross-env NODE_ENV=development nodemon",
     "build": "swc src -d dist --source-maps --copy-files",
     "migration:create": "typeorm migration:create -o ./migrations/migration",
-    "migration:generate": "yarn build && typeorm migration:generate -o ./migrations/migration -d ./dist/database/datasource.js",
+    "migration:generate": "yarn build && cross-env NODE_ENV=production typeorm migration:generate -o ./migrations/migration -d ./dist/database/datasource.js",
     "migration:run": "typeorm migration:run -d ./dist/database/datasource.js",
     "migration:revert": "typeorm migration:revert -d ./dist/database/datasource.js"
   },

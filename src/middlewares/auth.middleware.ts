@@ -2,7 +2,7 @@ import { SECRET_KEY } from "@config";
 import { UserRole } from "@database/entities/user.entity";
 import { HttpException } from "@exceptions/http.exception";
 import { NextFunction, Request } from "express";
-import { verify } from "jsonwebtoken";
+import { TokenExpiredError, verify } from "jsonwebtoken";
 
 const hasRole = (roles: UserRole[]) => async (
   req: Request,
@@ -20,8 +20,11 @@ const hasRole = (roles: UserRole[]) => async (
 
     const secretKey: string = SECRET_KEY!;
     verify(authorization, secretKey, (err: any, userToken: any) => {
-      if (err) next(new HttpException(401, "Token autentikasi salah"));
-
+      if (err) {
+        if (err instanceof TokenExpiredError)
+          return next(new HttpException(401, "Token autentikasi kadaluarsa"));
+        next(new HttpException(401, "Token autentikasi salah"));
+      }
       if (!roles.some((r) => userToken.role.includes(r)))
         next(
           new HttpException(403, "Anda tidak memiliki akses untuk fitur ini")

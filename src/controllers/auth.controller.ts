@@ -89,7 +89,7 @@ class AuthController {
       role: user.role,
     };
     const secretKey: string = SECRET_KEY!;
-    const expiresIn: number = 60 * 60 * 24 * 7;
+    const expiresIn: number = 60 * 60 * 24 * 1;
     return sign(dataStoredInToken, secretKey, { expiresIn });
   };
 }
