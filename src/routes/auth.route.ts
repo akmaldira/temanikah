@@ -15,10 +15,7 @@ class AuthRoute implements IRoutes {
 
   private initializeRoutes(): void {
     this.router.post(`${this.path}/login`, tryCatch(this.controller.login));
-    this.router.post(
-      `${this.path}/register`,
-      tryCatch(this.controller.register)
-    );
+    this.router.post(`${this.path}/register`, tryCatch(this.controller.register));
   }
 }
 

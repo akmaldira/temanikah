@@ -10,7 +10,7 @@ import SubscriptionRepository from "@repositories/subscription.repository";
 import TransactionRepository from "@repositories/transaction.repository";
 import VoucherRepository from "@repositories/voucher.repository";
 import { TransactionSchema } from "@validations/transaction.validation";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 const midtransClient = require("midtrans-client");
 
@@ -22,22 +22,35 @@ class TransactionController {
     this.repository = new TransactionRepository(
       Transaction,
       AppDataSource.manager,
-      AppDataSource.manager.queryRunner
+      AppDataSource.manager.queryRunner,
     );
     this.voucherRepository = new VoucherRepository(
       Voucher,
       AppDataSource.manager,
-      AppDataSource.manager.queryRunner
+      AppDataSource.manager.queryRunner,
     );
     this.subscriptionRepository = new SubscriptionRepository(
       Subscription,
       AppDataSource.manager,
-      AppDataSource.manager.queryRunner
+      AppDataSource.manager.queryRunner,
     );
   }
 
   public findAll = async (req: RequestWithUser, res: Response) => {
-    const transactions = await this.repository.find();
+    const transactions = await this.repository.find({
+      relations: ["subscription_id", "user_id", "voucher_id"],
+      select: {
+        subscription: {
+          id: true,
+        },
+        user: {
+          id: true,
+        },
+        voucher: {
+          id: true,
+        },
+      },
+    });
 
     res.status(200).json({
       error: false,
@@ -54,7 +67,7 @@ class TransactionController {
       });
     }
     const subscription = await this.subscriptionRepository.getOrThrow(
-      body.subscription_id
+      body.subscription_id,
     );
 
     this.checkIfVoucherCanApply(voucher, subscription);
@@ -64,11 +77,11 @@ class TransactionController {
     const transaction = this.repository.create({
       ...body,
       id: uuidv4(),
-      user_id: req.user!.id,
-      subscription_id: subscription.id,
+      user: req.user!,
+      subscription: subscription,
       amount: totalAmount,
-      voucher_id: voucher ? voucher.id : null,
-    } as Transaction);
+      voucher: voucher ?? undefined,
+    });
 
     await this.createMidtransTransaction(transaction);
 
@@ -79,7 +92,7 @@ class TransactionController {
   };
 
   // Todo: Implement this
-  public notification = async (req: Request, res: Response) => {};
+  // public notification = async (req: Request, res: Response) => {};
 
   private parseRequestBody = (body: any): ITransactionRequest => {
     TransactionSchema.parse(body);
@@ -88,7 +101,7 @@ class TransactionController {
 
   private checkIfVoucherCanApply = (
     voucher: null | Voucher,
-    subscription: Subscription
+    subscription: Subscription,
   ): void => {
     if (voucher) {
       if (voucher.stock === 0) {
@@ -96,18 +109,14 @@ class TransactionController {
       }
 
       if (voucher.expired_at < new Date()) {
-        throw new HttpException(
-          400,
-          "Voucher sudah expired",
-          "VOUCHER_EXPIRED"
-        );
+        throw new HttpException(400, "Voucher sudah expired", "VOUCHER_EXPIRED");
       }
 
       if (voucher.min_price > subscription.price || !voucher.is_active) {
         throw new HttpException(
           400,
           "Voucher tidak dapat digunakan",
-          "VOUCHER_NOT_APPLICABLE"
+          "VOUCHER_NOT_APPLICABLE",
         );
       }
     }
@@ -120,9 +129,7 @@ class TransactionController {
     return amount;
   };
 
-  private createMidtransTransaction = async (
-    transaction: Transaction
-  ): Promise<void> => {
+  private createMidtransTransaction = async (transaction: Transaction): Promise<void> => {
     const coreApi = new midtransClient.CoreApi({
       isProduction: false,
       serverKey: process.env.MIDTRANS_SERVER_KEY,
@@ -134,7 +141,7 @@ class TransactionController {
       bank_transfer: {
         bank: "permata",
         permata: {
-          user_id: transaction.user_id,
+          user_id: transaction.user,
         },
       },
       transaction_details: {

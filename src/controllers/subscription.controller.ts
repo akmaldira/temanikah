@@ -13,7 +13,7 @@ class SubscriptionController {
     this.repository = new SubscriptionRepository(
       Subscription,
       AppDataSource.manager,
-      AppDataSource.manager.queryRunner
+      AppDataSource.manager.queryRunner,
     );
   }
 
@@ -46,7 +46,7 @@ class SubscriptionController {
 
     const subscription = await this.repository.updateAndReturn(
       req.body.id,
-      req.body as Subscription
+      req.body as Subscription,
     );
 
     res.status(200).json({

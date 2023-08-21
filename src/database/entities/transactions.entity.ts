@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { Subscription } from "./subscription.entity";
 import { User } from "./user.entity";
@@ -23,32 +17,20 @@ export class Transaction extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @ManyToOne(
-    () => User,
-    (user) => user.id,
-    { nullable: false }
-  )
+  @ManyToOne(() => User, user => user.id, { nullable: false })
   @JoinColumn({ name: "user_id" })
-  user_id: string;
+  user: User;
 
-  @ManyToOne(
-    () => Subscription,
-    (subscription) => subscription.id,
-    { nullable: false }
-  )
+  @ManyToOne(() => Subscription, subscription => subscription.id, { nullable: false })
   @JoinColumn({ name: "subscription_id" })
-  subscription_id: number;
+  subscription: Subscription;
 
   @Column("decimal", { precision: 10, scale: 2 })
   amount: number;
 
-  @ManyToOne(
-    () => Voucher,
-    (voucher) => voucher.id,
-    { nullable: true }
-  )
+  @ManyToOne(() => Voucher, voucher => voucher.id, { nullable: true })
   @JoinColumn({ name: "voucher_id" })
-  voucher_id?: number;
+  voucher?: Voucher;
 
   @Column({
     type: "enum",

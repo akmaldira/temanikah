@@ -16,7 +16,7 @@ class AuthController {
     this.userRepository = new UserRepository(
       User,
       AppDataSource.manager,
-      AppDataSource.manager.queryRunner
+      AppDataSource.manager.queryRunner,
     );
   }
 
@@ -40,9 +40,7 @@ class AuthController {
   public register = async (req: Request, res: Response) => {
     registerBodySpec.parse(req.body);
 
-    this.checkIfUserNotExists(
-      await this.userRepository.getByEmail(req.body.email)
-    );
+    this.checkIfUserNotExists(await this.userRepository.getByEmail(req.body.email));
 
     const passwordHash = await this.hashPassword(req.body.password);
 
@@ -65,7 +63,7 @@ class AuthController {
 
   private checkIfPasswordMatch = async (
     bodyPassword: string,
-    userPassword: string
+    userPassword: string,
   ): Promise<void> => {
     const match = await compare(bodyPassword, userPassword);
     if (!match) {

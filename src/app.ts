@@ -40,7 +40,7 @@ class App {
 
   private connectToDatabase(): void {
     AppDataSource.initialize()
-      .then((_: any) => logger.info("Database connected"))
+      .then(() => logger.info("Database connected"))
       .catch((err: any) => logger.error("Database error", err));
   }
 
@@ -56,7 +56,7 @@ class App {
   }
 
   private initializeRoutes(routes: IRoutes[]): void {
-    routes.forEach((route) => {
+    routes.forEach(route => {
       this.app.use("/", route.router);
     });
   }

@@ -13,7 +13,7 @@ class VoucherController {
     this.repository = new VoucherRepository(
       Voucher,
       AppDataSource.manager,
-      AppDataSource.manager.queryRunner
+      AppDataSource.manager.queryRunner,
     );
   }
 

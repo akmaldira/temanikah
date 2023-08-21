@@ -41,9 +41,6 @@ export class User extends BaseEntity {
   banned_at: Date;
 
   // Relational
-  @OneToMany(
-    () => Transaction,
-    (transaction) => transaction.user_id
-  )
+  @OneToMany(() => Transaction, transaction => transaction.user_id)
   transactions: Transaction[];
 }

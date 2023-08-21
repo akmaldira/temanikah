@@ -20,17 +20,17 @@ class VoucherRoute implements IRoutes {
     this.router.get(
       `${this.path}`,
       hasRole([UserRole.admin]),
-      tryCatch(this.controller.findAll)
+      tryCatch(this.controller.findAll),
     );
     this.router.post(
       `${this.path}`,
       hasRole([UserRole.admin]),
-      tryCatch(this.controller.create)
+      tryCatch(this.controller.create),
     );
     this.router.delete(
       `${this.path}`,
       hasRole([UserRole.admin]),
-      tryCatch(this.controller.delete)
+      tryCatch(this.controller.delete),
     );
   }
 }

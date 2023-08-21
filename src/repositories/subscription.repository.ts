@@ -6,18 +6,14 @@ class SubscriptionRepository extends Repository<Subscription> {
   public async getOrThrow(id: number): Promise<Subscription> {
     const subscription = await this.findOne({ where: { id } });
     if (!subscription) {
-      throw new HttpException(
-        400,
-        "Paket tidak ditemukan",
-        "SUBSCRIPTION_NOT_FOUND"
-      );
+      throw new HttpException(400, "Paket tidak ditemukan", "SUBSCRIPTION_NOT_FOUND");
     }
     return subscription;
   }
 
   public async updateAndReturn(
     id: number,
-    subscription: Subscription
+    subscription: Subscription,
   ): Promise<Subscription> {
     await this.update(id, subscription);
     return await this.getOrThrow(id);
