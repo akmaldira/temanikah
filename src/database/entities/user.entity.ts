@@ -22,25 +22,25 @@ export class User extends BaseEntity {
   @Column()
   email: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @Column({ default: false })
   is_verified: boolean;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   verification_token: string;
 
-  @Column({ default: false })
+  @Column({ default: false, select: false })
   is_banned: boolean;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   banned_reason: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   banned_at: Date;
 
   // Relational
-  @OneToMany(() => Transaction, transaction => transaction.user_id)
+  @OneToMany(() => Transaction, transaction => transaction.user)
   transactions: Transaction[];
 }

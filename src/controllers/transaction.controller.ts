@@ -1,11 +1,10 @@
 import { AppDataSource } from "@database/datasource";
 import { Subscription } from "@database/entities/subscription.entity";
-import { Transaction } from "@database/entities/transactions.entity";
+import { Transaction, TransactionStatus } from "@database/entities/transactions.entity";
 import { Voucher } from "@database/entities/voucher.entity";
-import { transactionRequestSpec } from "@dtos/transaction.dto";
+import { transactionResponseSpec } from "@dtos/transaction.dto";
 import { HttpException } from "@exceptions/http.exception";
 import { RequestWithUser } from "@interfaces/route.interface";
-import { ITransactionRequest } from "@interfaces/transaction.interface";
 import SubscriptionRepository from "@repositories/subscription.repository";
 import TransactionRepository from "@repositories/transaction.repository";
 import VoucherRepository from "@repositories/voucher.repository";
@@ -38,44 +37,32 @@ class TransactionController {
 
   public findAll = async (req: RequestWithUser, res: Response) => {
     const transactions = await this.repository.find({
-      relations: ["subscription_id", "user_id", "voucher_id"],
-      select: {
-        subscription: {
-          id: true,
-        },
-        user: {
-          id: true,
-        },
-        voucher: {
-          id: true,
-        },
-      },
+      relations: ["subscription", "user", "voucher"],
     });
 
     res.status(200).json({
       error: false,
-      data: transactions,
+      data: transactions.map(transaction => transactionResponseSpec(transaction)),
     });
   };
 
   public create = async (req: RequestWithUser, res: Response) => {
-    const body: ITransactionRequest = this.parseRequestBody(req.body);
+    TransactionSchema.parse(req.body);
+
     let voucher: null | Voucher = null;
-    if (body.voucher_id) {
+    if (req.body.voucher_code) {
       voucher = await this.voucherRepository.findOne({
-        where: { id: body.voucher_id },
+        where: { code: req.body.voucher_code },
       });
     }
     const subscription = await this.subscriptionRepository.getOrThrow(
-      body.subscription_id,
+      req.body.subscription_id,
     );
 
     this.checkIfVoucherCanApply(voucher, subscription);
-    console.log(uuidv4());
 
     const totalAmount = this.totalAmount(subscription.price, voucher);
     const transaction = this.repository.create({
-      ...body,
       id: uuidv4(),
       user: req.user!,
       subscription: subscription,
@@ -85,18 +72,54 @@ class TransactionController {
 
     await this.createMidtransTransaction(transaction);
 
+    if (transaction.voucher) {
+      transaction.voucher.stock -= 1;
+      await this.voucherRepository.save(transaction.voucher);
+    }
+
     res.status(201).json({
       error: false,
-      data: transaction,
+      data: transactionResponseSpec(transaction),
     });
   };
 
-  // Todo: Implement this
-  // public notification = async (req: Request, res: Response) => {};
+  public notification = async (req: Request, res: Response) => {
+    const notification = await this.handleNotification(req.body);
 
-  private parseRequestBody = (body: any): ITransactionRequest => {
-    TransactionSchema.parse(body);
-    return transactionRequestSpec(body);
+    const { order_id, transaction_status, fraud_status } = notification;
+    if (!order_id || !transaction_status || !fraud_status) {
+      throw new HttpException(400, "Invalid notification body", "INVALID_BODY");
+    }
+    const transaction = await this.repository.findOne({ where: { id: order_id } });
+
+    if (!transaction) {
+      throw new HttpException(400, "Transaction not found", "TRANSACTION_NOT_FOUND");
+    }
+
+    if (transaction_status == "capture") {
+      // capture only applies to card transaction, which you need to check for the fraudStatus
+      if (fraud_status == "challenge") {
+        // TODO set transaction status on your databaase to 'challenge'
+      } else if (fraud_status == "accept") {
+        // TODO set transaction status on your databaase to 'success'
+      }
+    } else if (transaction_status == "settlement") {
+      transaction.status = TransactionStatus.success;
+    } else if (transaction_status == "deny") {
+      // TODO you can ignore 'deny', because most of the time it allows payment retries
+      // and later can become success
+    } else if (transaction_status == "cancel" || transaction_status == "expire") {
+      transaction.status = TransactionStatus.declined;
+    } else if (transaction_status == "pending") {
+      transaction.status = TransactionStatus.pending;
+      // TODO set transaction status on your databaase to 'pending' / waiting payment
+    }
+
+    transaction.midtrans_response.push(JSON.stringify(notification));
+
+    await this.repository.save(transaction);
+
+    res.status(200).json(transaction);
   };
 
   private checkIfVoucherCanApply = (
@@ -160,6 +183,16 @@ class TransactionController {
       .catch((e: any) => {
         throw new HttpException(400, e.message, "MIDTRANS_ERROR");
       });
+  };
+
+  private handleNotification = async (body: any): Promise<any> => {
+    const apiClient = new midtransClient.Snap({
+      isProduction: false,
+      serverKey: process.env.MIDTRANS_SERVER_KEY,
+      clientKey: process.env.MIDTRANS_CLIENT_KEY,
+    });
+
+    return await apiClient.transaction.notification(body);
   };
 }
 

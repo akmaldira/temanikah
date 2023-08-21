@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { ColumnNumericTransformer } from "../utils/columnNumericTransformer";
 
 @Entity({ schema: "public", name: "vouchers" })
 export class Voucher {
@@ -8,13 +9,23 @@ export class Voucher {
   @Column()
   name: string;
 
+  @Unique("voucher_code", ["code"])
+  @Index()
   @Column()
   code: string;
 
-  @Column("decimal", { precision: 10, scale: 2 })
+  @Column("decimal", {
+    precision: 10,
+    scale: 2,
+    transformer: new ColumnNumericTransformer(),
+  })
   discount: number;
 
-  @Column("decimal", { precision: 10, scale: 2 })
+  @Column("decimal", {
+    precision: 10,
+    scale: 2,
+    transformer: new ColumnNumericTransformer(),
+  })
   min_price: number;
 
   @Column()

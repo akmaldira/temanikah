@@ -1,4 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { ColumnNumericTransformer } from "../utils/columnNumericTransformer";
 import { BaseEntity } from "./base.entity";
 import { Subscription } from "./subscription.entity";
 import { User } from "./user.entity";
@@ -25,7 +26,11 @@ export class Transaction extends BaseEntity {
   @JoinColumn({ name: "subscription_id" })
   subscription: Subscription;
 
-  @Column("decimal", { precision: 10, scale: 2 })
+  @Column("decimal", {
+    precision: 10,
+    scale: 2,
+    transformer: new ColumnNumericTransformer(),
+  })
   amount: number;
 
   @ManyToOne(() => Voucher, voucher => voucher.id, { nullable: true })

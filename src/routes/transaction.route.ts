@@ -26,6 +26,10 @@ class TransactionRoute implements IRoutes {
       hasRole([UserRole.user, UserRole.admin]) as any,
       tryCatch(this.controller.create),
     );
+    this.router.post(
+      `${this.path}/notification`,
+      tryCatch(this.controller.notification as any),
+    );
   }
 }
 

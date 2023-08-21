@@ -1,6 +1,10 @@
-export const transactionRequestSpec = (body: any) => ({
-  user_id: body.user_id,
-  subscription_id: body.subscription_id,
-  amount: body.amount,
-  voucher_id: body.voucher_id,
+import { Transaction } from "@database/entities/transactions.entity";
+
+export const transactionResponseSpec = (transaction: Transaction) => ({
+  created_at: transaction.created_at,
+  amount: transaction.amount,
+  status: transaction.status,
+  subscription_name: transaction.subscription.name,
+  user_email: transaction.user.email,
+  voucher_code: transaction.voucher?.code,
 });

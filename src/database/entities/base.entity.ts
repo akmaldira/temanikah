@@ -4,9 +4,9 @@ export class BaseEntity {
   @CreateDateColumn({ type: "timestamp" })
   created_at: Date;
 
-  @UpdateDateColumn({ type: "timestamp" })
+  @UpdateDateColumn({ type: "timestamp", select: false })
   updated_at: Date;
 
-  @DeleteDateColumn({ type: "timestamp" })
+  @DeleteDateColumn({ type: "timestamp", select: false })
   deleted_at: Date;
 }
