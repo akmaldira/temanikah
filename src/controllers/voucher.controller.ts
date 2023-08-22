@@ -1,9 +1,9 @@
-import { HttpException } from "@/exceptions/http.exception";
-import { voucherBodySpec } from "@/validations/voucher.validation";
 import { AppDataSource } from "@database/datasource";
 import { Voucher } from "@database/entities/voucher.entity";
+import { HttpException } from "@exceptions/http.exception";
 import { RequestWithUser } from "@interfaces/route.interface";
 import VoucherRepository from "@repositories/voucher.repository";
+import { voucherBodySpec } from "@validations/voucher.validation";
 import { Response } from "express";
 
 class VoucherController {

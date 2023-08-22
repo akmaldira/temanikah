@@ -1,4 +1,4 @@
-import { User } from "@/database/entities/user.entity";
+import { User } from "@database/entities/user.entity";
 
 export const userResponseSpec = (user: User) => ({
   id: user.id,

@@ -1,8 +1,8 @@
-import UserController from "@/controllers/user.controller";
-import { UserRole } from "@/database/entities/user.entity";
-import { tryCatch } from "@/utils/tryCatch";
+import UserController from "@controllers/user.controller";
+import { UserRole } from "@database/entities/user.entity";
 import { IRoutes } from "@interfaces/route.interface";
 import hasRole from "@middlewares/auth.middleware";
+import { tryCatch } from "@utils/tryCatch";
 import { Router } from "express";
 
 class UserRoute implements IRoutes {

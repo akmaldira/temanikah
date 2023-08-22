@@ -38,7 +38,7 @@ class App {
     });
   }
 
-  private connectToDatabase(): void {
+  private async connectToDatabase(): Promise<void> {
     AppDataSource.initialize()
       .then(() => logger.info("Database connected"))
       .catch((err: any) => logger.error("Database error", err));

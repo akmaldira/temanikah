@@ -1,5 +1,5 @@
-import { AppDataSource } from "@/database/datasource";
 import { SECRET_KEY } from "@config";
+import { AppDataSource } from "@database/datasource";
 import { User } from "@database/entities/user.entity";
 import { registerResponseSpec } from "@dtos/auth.dto";
 import { HttpException } from "@exceptions/http.exception";

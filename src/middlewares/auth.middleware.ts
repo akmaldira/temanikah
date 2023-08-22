@@ -1,7 +1,7 @@
-import { RequestWithUser } from "@/interfaces/route.interface";
 import { SECRET_KEY } from "@config";
 import { UserRole } from "@database/entities/user.entity";
 import { HttpException } from "@exceptions/http.exception";
+import { RequestWithUser } from "@interfaces/route.interface";
 import { NextFunction } from "express";
 import { TokenExpiredError, verify } from "jsonwebtoken";
 

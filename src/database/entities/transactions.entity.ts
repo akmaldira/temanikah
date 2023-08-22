@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Relation,
+} from "typeorm";
 import { ColumnNumericTransformer } from "../utils/columnNumericTransformer";
 import { BaseEntity } from "./base.entity";
 import { Subscription } from "./subscription.entity";
@@ -13,6 +20,19 @@ export enum TransactionStatus {
   "success" = "success",
 }
 
+export enum PaymentType {
+  "bank_transfer" = "bank_transfer",
+  "qris" = "qris",
+}
+
+export enum BankType {
+  "bca" = "bca",
+  "permata" = "permata",
+  "bri" = "bri",
+  "bni" = "bni",
+  "qris" = "qris",
+}
+
 @Entity({ schema: "public", name: "transactions" })
 export class Transaction extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
@@ -20,11 +40,11 @@ export class Transaction extends BaseEntity {
 
   @ManyToOne(() => User, user => user.id, { nullable: false })
   @JoinColumn({ name: "user_id" })
-  user: User;
+  user: Relation<User>;
 
   @ManyToOne(() => Subscription, subscription => subscription.id, { nullable: false })
   @JoinColumn({ name: "subscription_id" })
-  subscription: Subscription;
+  subscription: Relation<Subscription>;
 
   @Column("decimal", {
     precision: 10,
@@ -35,7 +55,7 @@ export class Transaction extends BaseEntity {
 
   @ManyToOne(() => Voucher, voucher => voucher.id, { nullable: true })
   @JoinColumn({ name: "voucher_id" })
-  voucher?: Voucher;
+  voucher?: Relation<Voucher>;
 
   @Column({
     type: "enum",
@@ -44,6 +64,21 @@ export class Transaction extends BaseEntity {
   })
   status: string;
 
+  @Column({
+    type: "enum",
+    enum: PaymentType,
+  })
+  payment_type: PaymentType;
+
+  @Column({
+    type: "enum",
+    enum: BankType,
+  })
+  payment_name: BankType;
+
   @Column("text", { array: true, name: "midtrans_response" })
   midtrans_response: string[];
+
+  @Column({ nullable: true })
+  va_number: string;
 }

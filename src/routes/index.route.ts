@@ -1,6 +1,6 @@
-import { tryCatch } from "@/utils/tryCatch";
 import IndexController from "@controllers/index.controller";
 import { IRoutes } from "@interfaces/route.interface";
+import { tryCatch } from "@utils/tryCatch";
 import { Router } from "express";
 
 class IndexRoute implements IRoutes {

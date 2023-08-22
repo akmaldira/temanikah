@@ -1,6 +1,6 @@
-import { tryCatch } from "@/utils/tryCatch";
 import AuthController from "@controllers/auth.controller";
 import { IRoutes } from "@interfaces/route.interface";
+import { tryCatch } from "@utils/tryCatch";
 import { Router } from "express";
 
 class AuthRoute implements IRoutes {

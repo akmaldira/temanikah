@@ -1,4 +1,4 @@
-import { AppDataSource } from "@/database/datasource";
+import { AppDataSource } from "@database/datasource";
 import { Subscription } from "@database/entities/subscription.entity";
 import { HttpException } from "@exceptions/http.exception";
 import { RequestWithUser } from "@interfaces/route.interface";

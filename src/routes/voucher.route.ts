@@ -1,8 +1,8 @@
-import VoucherController from "@/controllers/voucher.controller";
-import { UserRole } from "@/database/entities/user.entity";
-import hasRole from "@/middlewares/auth.middleware";
-import { tryCatch } from "@/utils/tryCatch";
+import VoucherController from "@controllers/voucher.controller";
+import { UserRole } from "@database/entities/user.entity";
 import { IRoutes } from "@interfaces/route.interface";
+import hasRole from "@middlewares/auth.middleware";
+import { tryCatch } from "@utils/tryCatch";
 import { Router } from "express";
 
 class VoucherRoute implements IRoutes {

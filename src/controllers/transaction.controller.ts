@@ -1,6 +1,10 @@
 import { AppDataSource } from "@database/datasource";
 import { Subscription } from "@database/entities/subscription.entity";
-import { Transaction, TransactionStatus } from "@database/entities/transactions.entity";
+import {
+  BankType,
+  Transaction,
+  TransactionStatus,
+} from "@database/entities/transactions.entity";
 import { Voucher } from "@database/entities/voucher.entity";
 import { transactionResponseSpec } from "@dtos/transaction.dto";
 import { HttpException } from "@exceptions/http.exception";
@@ -8,10 +12,13 @@ import { RequestWithUser } from "@interfaces/route.interface";
 import SubscriptionRepository from "@repositories/subscription.repository";
 import TransactionRepository from "@repositories/transaction.repository";
 import VoucherRepository from "@repositories/voucher.repository";
-import { TransactionSchema } from "@validations/transaction.validation";
+import {
+  transactionBankTransferSpec,
+  transactionRequestBodySpec,
+} from "@validations/transaction.validation";
 import { Response } from "express";
 import { v4 as uuidv4 } from "uuid";
-const midtransClient = require("midtrans-client");
+import MidtransPayment from "./payments/midtrans";
 
 class TransactionController {
   private repository: TransactionRepository;
@@ -36,6 +43,17 @@ class TransactionController {
   }
 
   public findAll = async (req: RequestWithUser, res: Response) => {
+    const { id } = req.query;
+
+    if (id) {
+      const transaction = await this.repository.findOneOrThrow(id as string);
+
+      return res.status(200).json({
+        error: false,
+        data: transactionResponseSpec(transaction),
+      });
+    }
+
     const transactions = await this.repository.find({
       relations: ["subscription", "user", "voucher"],
     });
@@ -47,30 +65,46 @@ class TransactionController {
   };
 
   public create = async (req: RequestWithUser, res: Response) => {
-    TransactionSchema.parse(req.body);
+    transactionRequestBodySpec.parse(req.body);
 
     let voucher: null | Voucher = null;
     if (req.body.voucher_code) {
-      voucher = await this.voucherRepository.findOne({
-        where: { code: req.body.voucher_code },
-      });
+      voucher = await this.voucherRepository.findOneOrThrow(req.body.voucher_code);
     }
-    const subscription = await this.subscriptionRepository.getOrThrow(
+    const subscription = await this.subscriptionRepository.findOneOrThrow(
       req.body.subscription_id,
     );
 
     this.checkIfVoucherCanApply(voucher, subscription);
 
+    const paymentType = req.body.payment_type;
     const totalAmount = this.totalAmount(subscription.price, voucher);
     const transaction = this.repository.create({
       id: uuidv4(),
       user: req.user!,
       subscription: subscription,
       amount: totalAmount,
+      payment_type: paymentType,
       voucher: voucher ?? undefined,
     });
 
-    await this.createMidtransTransaction(transaction);
+    const midtrans = new MidtransPayment();
+    if (paymentType == "bank_transfer") {
+      const bankType = req.body.bank;
+      transactionBankTransferSpec.parse(bankType);
+      const createTx = await midtrans.bankTransfer(req.user!, transaction, bankType);
+      transaction.va_number = createTx.va_number;
+      transaction.midtrans_response = [JSON.stringify(createTx)];
+      transaction.payment_name = bankType;
+    } else if (paymentType == "qris") {
+      const createTx = await midtrans.qris(req.user!, transaction);
+      transaction.va_number = createTx.va_number;
+      transaction.midtrans_response = [JSON.stringify(createTx)];
+      transaction.payment_name = "qris" as BankType;
+    } else {
+      throw new HttpException(400, "Metode pembayaran tidak valid", "PAYMENT_NOT_VALID");
+    }
+    await this.repository.save(transaction);
 
     if (transaction.voucher) {
       transaction.voucher.stock -= 1;
@@ -84,12 +118,10 @@ class TransactionController {
   };
 
   public notification = async (req: Request, res: Response) => {
-    const notification = await this.handleNotification(req.body);
+    const notification = await MidtransPayment.notification(req.body);
 
     const { order_id, transaction_status, fraud_status } = notification;
-    if (!order_id || !transaction_status || !fraud_status) {
-      throw new HttpException(400, "Invalid notification body", "INVALID_BODY");
-    }
+
     const transaction = await this.repository.findOne({ where: { id: order_id } });
 
     if (!transaction) {
@@ -150,49 +182,6 @@ class TransactionController {
       return amount - voucher.discount;
     }
     return amount;
-  };
-
-  private createMidtransTransaction = async (transaction: Transaction): Promise<void> => {
-    const coreApi = new midtransClient.CoreApi({
-      isProduction: false,
-      serverKey: process.env.MIDTRANS_SERVER_KEY,
-      clientKey: process.env.MIDTRANS_CLIENT_KEY,
-    });
-
-    const parameter = {
-      payment_type: "bank_transfer",
-      bank_transfer: {
-        bank: "permata",
-        permata: {
-          user_id: transaction.user,
-        },
-      },
-      transaction_details: {
-        order_id: transaction.id,
-        gross_amount: transaction.amount,
-      },
-    };
-
-    coreApi
-      .charge(parameter)
-      .then(async (chargeResponse: any) => {
-        transaction.midtrans_response = [JSON.stringify(chargeResponse)];
-
-        await this.repository.save(transaction);
-      })
-      .catch((e: any) => {
-        throw new HttpException(400, e.message, "MIDTRANS_ERROR");
-      });
-  };
-
-  private handleNotification = async (body: any): Promise<any> => {
-    const apiClient = new midtransClient.Snap({
-      isProduction: false,
-      serverKey: process.env.MIDTRANS_SERVER_KEY,
-      clientKey: process.env.MIDTRANS_CLIENT_KEY,
-    });
-
-    return await apiClient.transaction.notification(body);
   };
 }
 

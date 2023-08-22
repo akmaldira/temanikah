@@ -23,6 +23,9 @@ module.exports = {
         // environment variable
         PORT: 3000,
         NODE_ENV: "production",
+        SECRET_KEY: "secret",
+        MIDTRANS_SERVER_KEY: "SB-Mid-server--Vkh4W31KVKmr2Ppfsl_ZXMb",
+        MIDTRANS_CLIENT_KEY: "SB-Mid-client-dFjG417DPni2jyMR",
       },
     },
     {
