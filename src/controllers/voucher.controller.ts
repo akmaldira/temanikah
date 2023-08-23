@@ -42,7 +42,7 @@ class VoucherController {
       throw new HttpException(400, "ID tidak boleh kosong", "ID_REQUIRED");
     }
 
-    await this.repository.delete(Number(req.query.id));
+    await this.repository.softDelete(Number(req.query.id));
 
     res.status(200).json({
       error: false,

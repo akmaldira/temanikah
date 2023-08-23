@@ -1,8 +1,9 @@
 import { Column, Entity, Index, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { ColumnNumericTransformer } from "../utils/columnNumericTransformer";
+import { BaseEntity } from "./base.entity";
 
 @Entity({ schema: "public", name: "vouchers" })
-export class Voucher {
+export class Voucher extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
