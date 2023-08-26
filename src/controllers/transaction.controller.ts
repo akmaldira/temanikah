@@ -130,7 +130,10 @@ class TransactionController {
 
     const { order_id, transaction_status, fraud_status } = notification;
 
-    const transaction = await this.repository.findOne({ where: { id: order_id } });
+    const transaction = await this.repository.findOne({
+      where: { id: order_id },
+      relations: ["user"],
+    });
 
     if (!transaction) {
       throw new HttpException(400, "Transaction not found", "TRANSACTION_NOT_FOUND");
