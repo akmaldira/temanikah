@@ -5,12 +5,14 @@ import {
   Transaction,
   TransactionStatus,
 } from "@database/entities/transactions.entity";
+import { UserSubscription } from "@database/entities/userSubscription.entity";
 import { Voucher } from "@database/entities/voucher.entity";
 import { transactionResponseSpec } from "@dtos/transaction.dto";
 import { HttpException } from "@exceptions/http.exception";
 import { RequestWithUser } from "@interfaces/route.interface";
 import SubscriptionRepository from "@repositories/subscription.repository";
 import TransactionRepository from "@repositories/transaction.repository";
+import UserSubscriptionRepository from "@repositories/userSubscription.repository";
 import VoucherRepository from "@repositories/voucher.repository";
 import {
   transactionBankTransferSpec,
@@ -24,6 +26,7 @@ class TransactionController {
   private repository: TransactionRepository;
   private voucherRepository: VoucherRepository;
   private subscriptionRepository: SubscriptionRepository;
+  private userSubscriptionRepository: UserSubscriptionRepository;
   constructor() {
     this.repository = new TransactionRepository(
       Transaction,
@@ -37,6 +40,11 @@ class TransactionController {
     );
     this.subscriptionRepository = new SubscriptionRepository(
       Subscription,
+      AppDataSource.manager,
+      AppDataSource.manager.queryRunner,
+    );
+    this.userSubscriptionRepository = new UserSubscriptionRepository(
+      UserSubscription,
       AppDataSource.manager,
       AppDataSource.manager.queryRunner,
     );
@@ -137,6 +145,10 @@ class TransactionController {
       }
     } else if (transaction_status == "settlement") {
       transaction.status = TransactionStatus.success;
+      await this.userSubscriptionRepository.save({
+        transaction: transaction,
+        user: transaction.user,
+      });
     } else if (transaction_status == "deny") {
       // TODO you can ignore 'deny', because most of the time it allows payment retries
       // and later can become success
