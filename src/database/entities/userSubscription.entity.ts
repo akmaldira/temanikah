@@ -47,6 +47,9 @@ export class UserSubscription extends BaseEntity {
   @Column("text", { name: "quotes", nullable: true })
   quotes: string;
 
+  @Column("text", { name: "quotes", nullable: true })
+  quotes2: string;
+
   @Column({ name: "picture_path", nullable: true })
   picturePath: string;
 
