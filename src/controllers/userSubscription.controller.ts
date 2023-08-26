@@ -2,6 +2,7 @@ import { AppDataSource } from "@database/datasource";
 import { UserSubscription } from "@database/entities/userSubscription.entity";
 import { RequestWithUser } from "@interfaces/route.interface";
 import UserSubscriptionRepository from "@repositories/userSubscription.repository";
+import { userSubscriptionBodySpec } from "@validations/userSubscription.validation";
 import { Response } from "express";
 
 class UserSubscriptionController {
@@ -34,7 +35,26 @@ class UserSubscriptionController {
     });
   };
 
+  public findMe = async (req: RequestWithUser, res: Response) => {
+    const user = req.user;
+
+    const userSubscription = await this.repository.find({
+      where: {
+        user: {
+          id: user!.id,
+        },
+      },
+    });
+
+    return res.status(200).json({
+      error: false,
+      data: userSubscription,
+    });
+  };
+
   public update = async (req: RequestWithUser, res: Response) => {
+    userSubscriptionBodySpec.parse(req.body);
+
     let userSubscription = await this.repository.findOneOrThrow(req.body.id);
 
     userSubscription = {
