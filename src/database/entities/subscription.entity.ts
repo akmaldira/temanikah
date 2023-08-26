@@ -22,4 +22,7 @@ export class Subscription extends BaseEntity {
 
   @Column()
   duration: number;
+
+  @Column({ default: true, select: false })
+  is_visible: boolean;
 }

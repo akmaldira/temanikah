@@ -18,7 +18,22 @@ class SubscriptionController {
   }
 
   public findAll = async (req: RequestWithUser, res: Response) => {
-    const subscriptions = await this.repository.find();
+    const user = req.user;
+
+    let subscriptions: Subscription[] = [];
+
+    if (user && user.role === "admin") {
+      subscriptions = await this.repository.find();
+    } else {
+      subscriptions = await this.repository.find({
+        where: {
+          is_visible: true,
+        },
+        order: {
+          id: "ASC",
+        },
+      });
+    }
 
     res.status(200).json({
       error: false,

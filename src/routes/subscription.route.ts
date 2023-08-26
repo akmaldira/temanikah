@@ -16,11 +16,7 @@ class SubscriptionRoute implements IRoutes {
   }
 
   private initializeRoutes(): void {
-    this.router.get(
-      `${this.path}`,
-      hasRole([UserRole.admin]) as any,
-      tryCatch(this.controller.findAll),
-    );
+    this.router.get(`${this.path}`, tryCatch(this.controller.findAll));
     this.router.post(
       `${this.path}`,
       hasRole([UserRole.admin]) as any,

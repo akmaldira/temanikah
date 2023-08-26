@@ -51,6 +51,7 @@ class TransactionController {
   }
 
   public findAll = async (req: RequestWithUser, res: Response) => {
+    const user = req.user;
     const { id } = req.query;
 
     if (id) {
@@ -62,9 +63,28 @@ class TransactionController {
       });
     }
 
-    const transactions = await this.repository.find({
-      relations: ["subscription", "user", "voucher"],
-    });
+    let transactions: Transaction[] = [];
+
+    if (user && user.role === "admin") {
+      transactions = await this.repository.find({
+        relations: ["subscription", "user", "voucher"],
+        order: {
+          created_at: "DESC",
+        },
+      });
+    } else {
+      transactions = await this.repository.find({
+        relations: ["subscription", "user", "voucher"],
+        where: {
+          user: {
+            id: req.user!.id,
+          },
+        },
+        order: {
+          created_at: "DESC",
+        },
+      });
+    }
 
     res.status(200).json({
       error: false,

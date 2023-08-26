@@ -1,3 +1,5 @@
+const NODE_ENV = process.env.NODE_ENV || "development";
+
 module.exports = {
   type: "postgres",
   host: "localhost",
@@ -8,8 +10,9 @@ module.exports = {
   synchronize: false,
   logging: false,
   entities: [
-    "./dist/database/entities/*.entity.js",
-    "./src/database/entities/*.entity.ts",
+    NODE_ENV === "production"
+      ? "./dist/database/**/*.entity.js"
+      : "./src/database/**/*.entity.ts",
   ],
   migrations: ["./migrations/*.js"],
   migrationsTableName: "migrations",

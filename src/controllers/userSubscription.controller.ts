@@ -27,28 +27,35 @@ class UserSubscriptionController {
       });
     }
 
-    const userSubscriptions = await this.repository.find();
+    const user = req.user;
+    let userSubscriptions: UserSubscription[] = [];
 
-    return res.status(200).json({
+    if (user && user.role === "admin") {
+      userSubscriptions = await this.repository.find({
+        order: {
+          transaction: {
+            created_at: "DESC",
+          },
+        },
+      });
+    } else {
+      userSubscriptions = await this.repository.find({
+        where: {
+          user: {
+            id: user!.id,
+          },
+        },
+        order: {
+          transaction: {
+            created_at: "DESC",
+          },
+        },
+      });
+    }
+
+    res.status(200).json({
       error: false,
       data: userSubscriptions,
-    });
-  };
-
-  public findMe = async (req: RequestWithUser, res: Response) => {
-    const user = req.user;
-
-    const userSubscription = await this.repository.find({
-      where: {
-        user: {
-          id: user!.id,
-        },
-      },
-    });
-
-    return res.status(200).json({
-      error: false,
-      data: userSubscription,
     });
   };
 
