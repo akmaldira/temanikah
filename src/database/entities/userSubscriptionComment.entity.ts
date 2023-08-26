@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Relation } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Relation,
+} from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { UserSubscription } from "./userSubscription.entity";
 
@@ -22,5 +29,6 @@ export class UserSubscriptionComment extends BaseEntity {
   @ManyToOne(() => UserSubscription, userSubscription => userSubscription.id, {
     nullable: false,
   })
-  userSubscription: Relation<UserSubscription>;
+  @JoinColumn({ name: "user_subscription_id" })
+  user_subscription: Relation<UserSubscription>;
 }

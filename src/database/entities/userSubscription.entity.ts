@@ -18,7 +18,7 @@ import { UserSubscriptionComment } from "./userSubscriptionComment.entity";
 
 export type UserLoveStories = {
   name: string;
-  imagePath: string;
+  image_path: string;
   description: string;
 };
 
@@ -30,19 +30,19 @@ export class UserSubscription extends BaseEntity {
   @Index()
   @Unique(["url_path"])
   @Column({ name: "url_path", nullable: true })
-  urlPath: string;
+  url_path: string;
 
   @Column({ name: "groom_name", nullable: true })
-  groomName: string;
+  groom_name: string;
 
   @Column({ name: "bride_name", nullable: true })
-  brideName: string;
+  bride_name: string;
 
   @Column({ name: "wedding_date", nullable: true })
-  weddingDate: Date;
+  wedding_date: Date;
 
   @Column({ name: "reception_date", nullable: true })
-  receptionDate: Date;
+  reception_date: Date;
 
   @Column("text", { name: "quotes", nullable: true })
   quotes: string;
@@ -51,63 +51,63 @@ export class UserSubscription extends BaseEntity {
   quotes2: string;
 
   @Column({ name: "picture_path", nullable: true })
-  picturePath: string;
+  picture_path: string;
 
   @Column({ name: "groom_father_name", nullable: true })
-  groomFatherName: string;
+  groom_father_name: string;
 
   @Column({ name: "groom_mother_name", nullable: true })
-  groomMotherName: string;
+  groom_mother_name: string;
 
   @Column({ name: "groom_instagram", nullable: true })
-  groomInstagram: string;
+  groom_instagram: string;
 
   @Column({ name: "bride_father_name", nullable: true })
-  brideFatherName: string;
+  bride_father_name: string;
 
   @Column({ name: "bride_mother_name", nullable: true })
-  brideMotherName: string;
+  bride_mother_name: string;
 
   @Column({ name: "bride_instagram", nullable: true })
-  brideInstagram: string;
+  bride_instagram: string;
 
   @Column({
     type: "jsonb",
     name: "love_stories",
     nullable: true,
   })
-  loveStories: UserLoveStories[];
+  love_stories: UserLoveStories[];
 
   @Column({ name: "wedding_address", nullable: true })
-  weddingAddress: string;
+  wedding_address: string;
 
   @Column({ name: "reception_address", nullable: true })
-  receptionAddress: string;
+  reception_address: string;
 
   @Column({ name: "youtube_url", nullable: true })
-  youtubeUrl: string;
+  youtube_url: string;
 
   @Column({ name: "wedding_coordinate", nullable: true })
-  weddingCoordinate: string;
+  wedding_coordinate: string;
 
   @Column({ name: "reception_coordinate", nullable: true })
-  receptionCoordinate: string;
+  reception_coordinate: string;
 
   @Column({ name: "music_url", nullable: true })
-  musicUrl: string;
+  music_url: string;
 
   @Column({ name: "image_path", nullable: true })
-  imagePath: string;
+  image_path: string;
 
   @Column({
     type: "jsonb",
     name: "invited_guests",
     nullable: true,
   })
-  invitedGuests: string[];
+  invited_guests: string[];
 
   @Column({ name: "is_active", default: true })
-  isActive: boolean;
+  is_active: boolean;
 
   @ManyToOne(() => Preset, preset => preset.id, { nullable: true })
   @JoinColumn({ name: "preset_id" })
@@ -125,5 +125,5 @@ export class UserSubscription extends BaseEntity {
     () => UserSubscriptionComment,
     userSubscriptionComment => userSubscriptionComment.id,
   )
-  userSubscriptionComments: UserSubscriptionComment[];
+  user_subscription_comments: UserSubscriptionComment[];
 }
