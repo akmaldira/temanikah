@@ -1,12 +1,10 @@
 import { HttpException } from "@/exceptions/http.exception";
 import { UserSubscription } from "@database/entities/userSubscription.entity";
-import { Repository } from "typeorm";
+import { FindOneOptions, Repository } from "typeorm";
 
 class UserSubscriptionRepository extends Repository<UserSubscription> {
-  public async findOneOrThrow(id: string) {
-    const userSubscription = await this.findOne({
-      where: { id },
-    });
+  public async findOneOrThrow(args: FindOneOptions<UserSubscription>) {
+    const userSubscription = await this.findOne(args);
 
     if (!userSubscription) {
       throw new HttpException(
