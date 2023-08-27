@@ -121,6 +121,9 @@ export class UserSubscription extends BaseEntity {
   @JoinColumn({ name: "user_id" })
   user: Relation<User>;
 
+  @Column({ name: "view_on_preset", default: false })
+  view_on_preset: boolean;
+
   @OneToMany(
     () => UserSubscriptionComment,
     userSubscriptionComment => userSubscriptionComment.id,
