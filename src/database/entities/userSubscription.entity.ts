@@ -109,6 +109,9 @@ export class UserSubscription extends BaseEntity {
   @Column({ name: "is_active", default: true })
   is_active: boolean;
 
+  @Column({ name: "view_count", default: 0 })
+  view_count: number;
+
   @ManyToOne(() => Preset, preset => preset.id, { nullable: true })
   @JoinColumn({ name: "preset_id" })
   preset: Relation<Preset>;
