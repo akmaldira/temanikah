@@ -67,23 +67,19 @@ class TransactionController {
       });
     }
 
-    const transactions = await this.repository.find({
+    const [transactions, total] = await this.repository.findAndCount({
       relations: ["subscription", "user", "voucher"],
-      where: {
-        user: {
-          id: req.user!.id,
-        },
-      },
       order: {
         created_at: "DESC",
       },
-      skip: Number(skip) ?? 0,
-      take: Number(take) ?? 10,
+      skip: Number(skip) || 0,
+      take: Number(take) || 10,
     });
 
     res.status(200).json({
       error: false,
       data: transactions.map(transaction => transactionResponseSpec(transaction)),
+      total,
     });
   };
 
@@ -111,7 +107,7 @@ class TransactionController {
       });
     }
 
-    const transactions = await this.repository.find({
+    const [transactions, total] = await this.repository.findAndCount({
       relations: ["subscription", "user", "voucher"],
       where: {
         user: {
@@ -121,13 +117,14 @@ class TransactionController {
       order: {
         created_at: "DESC",
       },
-      skip: Number(skip) ?? 0,
-      take: Number(take) ?? 10,
+      skip: Number(skip) || 0,
+      take: Number(take) || 10,
     });
 
     res.status(200).json({
       error: false,
       data: transactions.map(transaction => transactionResponseSpec(transaction)),
+      total,
     });
   };
 

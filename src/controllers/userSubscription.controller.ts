@@ -32,19 +32,20 @@ class UserSubscriptionController {
       });
     }
 
-    const userSubscriptions = await this.repository.find({
+    const [userSubscriptions, total] = await this.repository.findAndCount({
       order: {
         transaction: {
           created_at: "DESC",
         },
       },
-      skip: Number(skip) ?? 0,
-      take: Number(take) ?? 10,
+      skip: Number(skip) || 0,
+      take: Number(take) || 10,
     });
 
     res.status(200).json({
       error: false,
       data: userSubscriptions,
+      total,
     });
   };
 
