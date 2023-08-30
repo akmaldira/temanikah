@@ -51,7 +51,7 @@ class TransactionController {
   }
 
   public findAll = async (req: RequestWithUser, res: Response) => {
-    const { id } = req.query;
+    const { id, skip, take } = req.query;
 
     if (id) {
       const transaction = await this.repository.findOneOrThrow({
@@ -77,6 +77,8 @@ class TransactionController {
       order: {
         created_at: "DESC",
       },
+      skip: Number(skip) ?? 0,
+      take: Number(take) ?? 10,
     });
 
     res.status(200).json({
@@ -87,7 +89,7 @@ class TransactionController {
 
   public findByUserId = async (req: RequestWithUser, res: Response) => {
     const { user_id } = req.params;
-    const { id } = req.query;
+    const { id, skip, take } = req.query;
 
     if (!user_id)
       throw new HttpException(400, "User id tidak ditemukan", "USER_ID_NOT_FOUND");
@@ -119,6 +121,8 @@ class TransactionController {
       order: {
         created_at: "DESC",
       },
+      skip: Number(skip) ?? 0,
+      take: Number(take) ?? 10,
     });
 
     res.status(200).json({

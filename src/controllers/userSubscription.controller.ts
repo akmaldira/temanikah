@@ -17,7 +17,7 @@ class UserSubscriptionController {
   }
 
   public findAll = async (req: RequestWithUser, res: Response) => {
-    const { id } = req.query;
+    const { id, skip, take } = req.query;
 
     if (id) {
       const userSubscription = await this.repository.findOneOrThrow({
@@ -38,6 +38,8 @@ class UserSubscriptionController {
           created_at: "DESC",
         },
       },
+      skip: Number(skip) ?? 0,
+      take: Number(take) ?? 10,
     });
 
     res.status(200).json({
