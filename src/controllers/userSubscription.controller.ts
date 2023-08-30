@@ -1,5 +1,6 @@
 import { AppDataSource } from "@database/datasource";
 import { UserSubscription } from "@database/entities/userSubscription.entity";
+import { HttpException } from "@exceptions/http.exception";
 import { RequestWithUser } from "@interfaces/route.interface";
 import UserSubscriptionRepository from "@repositories/userSubscription.repository";
 import { userSubscriptionBodySpec } from "@validations/userSubscription.validation";
@@ -31,31 +32,13 @@ class UserSubscriptionController {
       });
     }
 
-    const user = req.user;
-    let userSubscriptions: UserSubscription[] = [];
-
-    if (user && user.role === "admin") {
-      userSubscriptions = await this.repository.find({
-        order: {
-          transaction: {
-            created_at: "DESC",
-          },
+    const userSubscriptions = await this.repository.find({
+      order: {
+        transaction: {
+          created_at: "DESC",
         },
-      });
-    } else {
-      userSubscriptions = await this.repository.find({
-        where: {
-          user: {
-            id: user!.id,
-          },
-        },
-        order: {
-          transaction: {
-            created_at: "DESC",
-          },
-        },
-      });
-    }
+      },
+    });
 
     res.status(200).json({
       error: false,
@@ -63,18 +46,36 @@ class UserSubscriptionController {
     });
   };
 
-  public findByPath = async (req: Request, res: Response) => {
-    const { path } = req.params;
+  public findByUserId = async (req: Request, res: Response) => {
+    const { user_id } = req.params;
+    const { id } = req.query;
 
-    const userSubscription = await this.repository.findOneOrThrow({
+    if (!user_id)
+      throw new HttpException(400, "User id tidak ditemukan", "USER_ID_NOT_FOUND");
+
+    if (id) {
+      const userSubscription = await this.repository.findOneOrThrow({
+        where: {
+          user: {
+            id: user_id,
+          },
+          id: id as string,
+        },
+      });
+
+      return res.status(200).json({
+        error: false,
+        data: userSubscription,
+      });
+    }
+
+    const userSubscription = await this.repository.find({
       where: {
-        url_path: path,
+        user: {
+          id: user_id,
+        },
       },
     });
-
-    userSubscription.view_count += 1;
-
-    await this.repository.save(userSubscription);
 
     return res.status(200).json({
       error: false,

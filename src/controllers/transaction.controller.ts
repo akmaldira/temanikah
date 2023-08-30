@@ -51,11 +51,15 @@ class TransactionController {
   }
 
   public findAll = async (req: RequestWithUser, res: Response) => {
-    const user = req.user;
     const { id } = req.query;
 
     if (id) {
-      const transaction = await this.repository.findOneOrThrow(id as string);
+      const transaction = await this.repository.findOneOrThrow({
+        relations: ["subscription", "user", "voucher"],
+        where: {
+          id: id as string,
+        },
+      });
 
       return res.status(200).json({
         error: false,
@@ -63,28 +67,59 @@ class TransactionController {
       });
     }
 
-    let transactions: Transaction[] = [];
-
-    if (user && user.role === "admin") {
-      transactions = await this.repository.find({
-        relations: ["subscription", "user", "voucher"],
-        order: {
-          created_at: "DESC",
+    const transactions = await this.repository.find({
+      relations: ["subscription", "user", "voucher"],
+      where: {
+        user: {
+          id: req.user!.id,
         },
-      });
-    } else {
-      transactions = await this.repository.find({
+      },
+      order: {
+        created_at: "DESC",
+      },
+    });
+
+    res.status(200).json({
+      error: false,
+      data: transactions.map(transaction => transactionResponseSpec(transaction)),
+    });
+  };
+
+  public findByUserId = async (req: RequestWithUser, res: Response) => {
+    const { user_id } = req.params;
+    const { id } = req.query;
+
+    if (!user_id)
+      throw new HttpException(400, "User id tidak ditemukan", "USER_ID_NOT_FOUND");
+
+    if (id) {
+      const transaction = await this.repository.findOneOrThrow({
         relations: ["subscription", "user", "voucher"],
         where: {
           user: {
-            id: req.user!.id,
+            id: user_id,
           },
-        },
-        order: {
-          created_at: "DESC",
+          id: id as string,
         },
       });
+
+      return res.status(200).json({
+        error: false,
+        data: transactionResponseSpec(transaction),
+      });
     }
+
+    const transactions = await this.repository.find({
+      relations: ["subscription", "user", "voucher"],
+      where: {
+        user: {
+          id: user_id,
+        },
+      },
+      order: {
+        created_at: "DESC",
+      },
+    });
 
     res.status(200).json({
       error: false,

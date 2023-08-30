@@ -1,0 +1,15 @@
+version: "3.4"
+
+services:
+  api:
+    container_name: be-temanikah-dev
+    build:
+      context: .
+      target: development
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/logs
+    ports:
+      - 5000:5000
+    command: yarn dev

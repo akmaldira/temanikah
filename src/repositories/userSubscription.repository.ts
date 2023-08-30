@@ -1,5 +1,5 @@
-import { HttpException } from "@/exceptions/http.exception";
 import { UserSubscription } from "@database/entities/userSubscription.entity";
+import { HttpException } from "@exceptions/http.exception";
 import { FindOneOptions, Repository } from "typeorm";
 
 class UserSubscriptionRepository extends Repository<UserSubscription> {
@@ -8,7 +8,7 @@ class UserSubscriptionRepository extends Repository<UserSubscription> {
 
     if (!userSubscription) {
       throw new HttpException(
-        400,
+        404,
         "User subscription not found",
         "USER_SUBSCRIPTION_NOT_FOUND",
       );

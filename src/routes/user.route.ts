@@ -21,6 +21,11 @@ class UserRoute implements IRoutes {
       hasRole([UserRole.admin]) as any,
       tryCatch(this.controller.findAll),
     );
+    this.router.get(
+      `${this.path}/me`,
+      hasRole([UserRole.admin, UserRole.user]) as any,
+      tryCatch(this.controller.findMe),
+    );
   }
 }
 

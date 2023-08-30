@@ -18,8 +18,13 @@ class TransactionRoute implements IRoutes {
   private initializeRoutes(): void {
     this.router.get(
       `${this.path}`,
-      hasRole([UserRole.user, UserRole.admin]) as any,
+      hasRole([UserRole.admin]) as any,
       tryCatch(this.controller.findAll),
+    );
+    this.router.get(
+      `${this.path}/:user_id`,
+      hasRole([UserRole.admin, UserRole.user]) as any,
+      tryCatch(this.controller.findByUserId),
     );
     this.router.post(
       `${this.path}`,
